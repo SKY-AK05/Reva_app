@@ -1,0 +1,12 @@
+# Android signing configuration template
+# Copy this file to key.properties and fill in your actual values
+# DO NOT commit key.properties to version control
+
+storePassword=your_keystore_password
+keyPassword=your_key_password
+keyAlias=your_key_alias
+storeFile=../path/to/your/keystore.jks
+
+# For development builds, you can use debug signing
+# For production, generate a proper keystore using:
+# keytool -genkey -v -keystore reva-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias reva-key

@@ -1,5 +1,13 @@
 # Reva Mobile App
 
+## Backend AI Proxy (OpenRouter Claude 3 Sonnet)
+A minimal Node.js/Express backend is included in the `backend/` directory. It proxies chat requests from the Flutter app to the OpenRouter Claude 3 Sonnet model, keeping your API key secure.
+
+- Start the backend: see `backend/README.md` for setup and deployment instructions.
+- The Flutter app will continue to send chat messages to `/api/v1/chat` as before.
+
+---
+
 Reva is an AI-powered productivity assistant mobile application built with Flutter. This app serves as a companion to the web application, providing users with a native mobile experience while maintaining full feature parity and real-time synchronization.
 
 ## Features
@@ -71,14 +79,22 @@ lib/
    ```
 
 4. Set up environment variables:
-   - Copy `.env.example` to `.env`
-   - Update the values with your actual configuration:
+   - Copy `env.sample` to `.env`:
+     ```bash
+     cp env.sample .env
      ```
-     SUPABASE_URL=your-supabase-url
-     SUPABASE_ANON_KEY=your-supabase-anon-key
-     API_BASE_URL=your-api-base-url
+   - Update the values in `.env` with your actual configuration:
+     ```
+     SUPABASE_URL=https://jjjrstmydcvimasfkdxw.supabase.co
+     SUPABASE_ANON_KEY=your-anon-key-here
+     API_BASE_URL=https://reva-backend-8bcr.onrender.com/api/v1/chat
      ENVIRONMENT=development
      ```
+   - Get your Supabase credentials from your project dashboard:
+     - Go to [supabase.com](https://supabase.com)
+     - Select your project
+     - Go to Settings → API
+     - Copy Project URL and anon/public key
 
 ### Running the App
 

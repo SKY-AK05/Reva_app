@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Reva</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>reva_mobile_app</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	
+	<!-- Push notification permissions -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>background-fetch</string>
+		<string>background-processing</string>
+	</array>
+	
+	<!-- Notification categories for rich notifications -->
+	<key>UNUserNotificationCenter</key>
+	<dict>
+		<key>UNAuthorizationOptionAlert</key>
+		<true/>
+		<key>UNAuthorizationOptionBadge</key>
+		<true/>
+		<key>UNAuthorizationOptionSound</key>
+		<true/>
+		<key>UNAuthorizationOptionCriticalAlert</key>
+		<false/>
+	</dict>
+	
+	<!-- Keychain access for secure storage -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.reva.app.reva-mobile-app</string>
+	</array>
+	
+	<!-- Minimum iOS version -->
+	<key>MinimumOSVersion</key>
+	<string>12.0</string>
+	
+	<!-- URL Schemes for deep linking -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>reva.app.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>reva</string>
+				<string>https</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- Associated domains for universal links -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:reva.app</string>
+	</array>
+	
+	<!-- Privacy usage descriptions -->
+	<key>NSCameraUsageDescription</key>
+	<string>Reva may use the camera to capture images for expense tracking and task documentation.</string>
+	
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Reva may access your photo library to attach images to tasks and expenses.</string>
+	
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Reva may use the microphone for voice input and audio notes.</string>
+	
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Reva may use your location to provide location-based reminders and expense tracking.</string>
+	
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Reva sends notifications for reminders, task updates, and important alerts.</string>
+	
+	<key>NSFaceIDUsageDescription</key>
+	<string>Reva uses Face ID for secure authentication and app access.</string>
+	
+	<!-- App capabilities -->
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	
+	<!-- Prevent backup of sensitive data -->
+	<key>NSSupportsAutomaticTermination</key>
+	<true/>
+	
+	<key>NSSupportsSuddenTermination</key>
+	<true/>
+	
+	<!-- App Transport Security exceptions for development -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+</dict>
+</plist>

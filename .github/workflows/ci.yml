@@ -1,0 +1,287 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+
+jobs:
+  # Test and analyze code
+  test:
+    name: Test and Analyze
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Verify formatting
+      run: dart format --output=none --set-exit-if-changed .
+      
+    - name: Analyze project source
+      run: flutter analyze
+      
+    - name: Run tests
+      run: flutter test --coverage
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage/lcov.info
+        
+  # Build Android APK for testing
+  build-android-debug:
+    name: Build Android Debug
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+        
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Build Android Debug APK
+      run: flutter build apk --debug --flavor dev
+      
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-debug-apk
+        path: build/app/outputs/flutter-apk/app-dev-debug.apk
+        
+  # Build Android release for staging
+  build-android-staging:
+    name: Build Android Staging
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+        
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Build Android App Bundle
+      run: flutter build appbundle --release --flavor stage
+      
+    - name: Upload AAB artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-staging-aab
+        path: build/app/outputs/bundle/stageRelease/app-stage-release.aab
+        
+  # Build Android production release
+  build-android-production:
+    name: Build Android Production
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+        
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Decode keystore
+      run: |
+        echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/keystore.jks
+        
+    - name: Create key.properties
+      run: |
+        echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" > android/key.properties
+        echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+        echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+        echo "storeFile=keystore.jks" >> android/key.properties
+        
+    - name: Build Android App Bundle
+      run: flutter build appbundle --release --flavor prod
+      
+    - name: Upload AAB artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-production-aab
+        path: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+        
+    - name: Deploy to Google Play Store
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        packageName: com.reva.app.reva_mobile_app
+        releaseFiles: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+        track: production
+        status: completed
+        
+  # Build iOS for testing (macOS required)
+  build-ios-debug:
+    name: Build iOS Debug
+    runs-on: macos-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Install iOS dependencies
+      run: |
+        cd ios
+        pod install
+        cd ..
+        
+    - name: Build iOS Debug
+      run: flutter build ios --debug --no-codesign
+      
+  # Build iOS production release
+  build-ios-production:
+    name: Build iOS Production
+    runs-on: macos-latest
+    needs: test
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Install iOS dependencies
+      run: |
+        cd ios
+        pod install
+        cd ..
+        
+    - name: Import Code-Signing Certificates
+      uses: Apple-Actions/import-codesign-certs@v1
+      with:
+        p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+        p12-password: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+        
+    - name: Download Provisioning Profiles
+      uses: Apple-Actions/download-provisioning-profiles@v1
+      with:
+        bundle-id: com.reva.app.reva-mobile-app
+        issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        
+    - name: Build iOS Release
+      run: flutter build ios --release
+      
+    - name: Build and Upload to App Store
+      run: |
+        cd ios
+        xcodebuild -workspace Runner.xcworkspace \
+          -scheme Runner \
+          -configuration Release \
+          -destination generic/platform=iOS \
+          -archivePath Runner.xcarchive \
+          archive
+          
+        xcodebuild -exportArchive \
+          -archivePath Runner.xcarchive \
+          -exportPath . \
+          -exportOptionsPlist ExportOptions.plist
+          
+        xcrun altool --upload-app \
+          --type ios \
+          --file Runner.ipa \
+          --username ${{ secrets.APPSTORE_USERNAME }} \
+          --password ${{ secrets.APPSTORE_PASSWORD }}
+        cd ..
+        
+  # Security scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'

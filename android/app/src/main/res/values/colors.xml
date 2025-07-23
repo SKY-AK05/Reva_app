@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Notification color matching app theme -->
+    <color name="notification_color">#6366F1</color>
+    
+    <!-- App primary colors -->
+    <color name="primary_color">#6366F1</color>
+    <color name="primary_dark">#4F46E5</color>
+    <color name="accent_color">#8B5CF6</color>
+</resources>
